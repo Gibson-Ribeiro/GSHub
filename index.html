@@ -30,6 +30,12 @@
       <label>Usuário ou e-mail<input id="loginUsuario" type="text" autocomplete="username" placeholder="admin ou email@empresa.com" required /></label>
       <label>Senha<input id="loginSenha" type="password" autocomplete="current-password" placeholder="capivaras123" required /></label>
       <button class="btn primary" type="submit">Entrar</button>
+      <button id="recuperarSenhaBtn" class="btn ghost" type="button">Recuperar senha</button>
+      <div id="resetPasswordBox" class="reset-password-box hidden">
+        <label>Nova senha<input id="novaSenha" type="password" autocomplete="new-password" placeholder="Nova senha" /></label>
+        <label>Confirmar nova senha<input id="confirmarNovaSenha" type="password" autocomplete="new-password" placeholder="Repita a nova senha" /></label>
+        <button id="salvarNovaSenhaBtn" class="btn primary" type="button">Salvar nova senha</button>
+      </div>
       <button class="btn ghost" type="button" data-install-app>Instalar aplicativo</button>
       <small class="login-hint" id="loginHint">Fallback local: admin · capivaras123</small>
     </form>

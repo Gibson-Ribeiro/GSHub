@@ -159,6 +159,20 @@
     if(!supa)return;
     await supa.auth.signOut();
   }
+  async function resetPassword(email,redirectTo){
+    const supa=getClient();
+    if(!supa)throw new Error("Supabase não configurado.");
+    const {data,error}=await supa.auth.resetPasswordForEmail(email,{redirectTo});
+    if(error)throw error;
+    return data;
+  }
+  async function updatePassword(password){
+    const supa=getClient();
+    if(!supa)throw new Error("Supabase não configurado.");
+    const {data,error}=await supa.auth.updateUser({password});
+    if(error)throw error;
+    return data;
+  }
   async function getSession(){
     const supa=getClient();
     if(!supa)return null;
@@ -191,6 +205,8 @@
     sincronizarPublicoLocal,
     signIn,
     signOut,
+    resetPassword,
+    updatePassword,
     getSession,
     carregarPerfilUsuario
   };
