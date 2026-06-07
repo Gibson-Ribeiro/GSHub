@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Capivaras Ficha Técnica</title>
+  <meta name="description" content="Sistema de ficha técnica calculável para Capivaras Feira & Bar." />
+  <meta name="theme-color" content="#1E3A1A" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-bg-glow app-bg-glow-one"></div>
+  <div class="app-bg-glow app-bg-glow-two"></div>
+
+  <!-- Login local provisório. Futuramente migrar autenticação e banco para Firebase/Supabase. -->
+  <section id="loginScreen" class="login-screen">
+    <form id="loginForm" class="login-card">
+      <div class="login-brand">
+        <div class="brand-logo"><img src="logo.png" alt="Logo Capivaras Feira & Bar" /></div>
+        <div>
+          <strong>Capivaras</strong>
+          <span>Feira & Bar</span>
+        </div>
+      </div>
+      <p class="eyebrow">Área administrativa</p>
+      <h1>Entrar no sistema</h1>
+      <p class="login-text" id="loginTexto">Acesso local ou Supabase Auth para gestão das fichas técnicas.</p>
+      <label>Usuário ou e-mail<input id="loginUsuario" type="text" autocomplete="username" placeholder="admin ou email@empresa.com" required /></label>
+      <label>Senha<input id="loginSenha" type="password" autocomplete="current-password" placeholder="capivaras123" required /></label>
+      <button class="btn primary" type="submit">Entrar</button>
+      <button class="btn ghost" type="button" data-install-app>Instalar aplicativo</button>
+      <small class="login-hint" id="loginHint">Fallback local: admin · capivaras123</small>
+    </form>
+  </section>
+
+  <div id="adminApp" class="app-shell hidden">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-logo" aria-label="Logo Capivaras Feira & Bar">
+          <img src="logo.png" alt="Logo Capivaras Feira & Bar" />
+        </div>
+        <div class="brand-copy">
+          <strong>Capivaras</strong>
+          <span>Feira & Bar</span>
+        </div>
+      </div>
+
+      <nav class="nav-tabs" aria-label="Navegação principal">
+        <button class="nav-btn active" data-tab="dashboard"><span>📊</span> Dashboard</button>
+        <button class="nav-btn" data-tab="ingredientes"><span>🥬</span> Ingredientes</button>
+        <button class="nav-btn" data-tab="custos"><span>💰</span> Custos fixos</button>
+        <button class="nav-btn" data-tab="receitas"><span>📋</span> Fichas técnicas</button>
+        <button class="nav-btn" data-tab="simulador"><span>🧮</span> Simulador</button>
+        <button class="nav-btn" data-tab="treinamento"><span>👨‍🍳</span> Treinamento</button>
+        <button class="nav-btn" data-tab="qrcode"><span>▦</span> QR Code</button>
+        <button class="nav-btn" data-tab="pedidos"><span>#</span> Pedidos</button>
+        <button class="nav-btn" data-tab="mesas"><span>QR</span> Mesas / QR Codes</button>
+        <button class="nav-btn" data-tab="dados"><span>💾</span> Dados</button>
+      </nav>
+
+      <div class="sidebar-note">
+        <span class="note-dot"></span>
+        <p>Sistema exclusivo para controle de custo, padrão, cardápio e preço de venda.</p>
+        <div id="perfilAtual" class="profile-pill">Perfil: admin</div>
+        <button id="logoutBtn" class="btn ghost logout-btn" type="button">Sair</button>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Gastrobar Management</p>
+          <h1>Capivaras Ficha Técnica</h1>
+          <p>Controle premium de ingredientes, receitas, custos, cardápio, preparo e preço sugerido.</p>
+        </div>
+        <div class="topbar-actions">
+          <button id="carregarCsvPadrao" class="btn secondary" type="button">Importar custos.csv</button>
+          <button class="btn secondary" type="button" data-install-app id="instalarAppBtn">Instalar aplicativo</button>
+          <a class="btn ghost" href="cardapio.html" target="_blank" rel="noopener">Ver cardápio</a>
+          <span class="markup-pill">Markup 3x</span>
+        </div>
+      </header>
+
+      <section id="dashboard" class="tab-content active">
+        <div class="section-header">
+          <div><p class="eyebrow">Visão geral</p><h2>Dashboard inicial</h2></div>
+          <p>Indicadores para acompanhar custo, preço, cardápio e possíveis falhas nas fichas.</p>
+        </div>
+        <div class="cards-grid">
+          <article class="card metric-card"><span class="metric-icon">🥬</span><small>Total de ingredientes</small><strong id="totalIngredientes">0</strong></article>
+          <article class="card metric-card"><span class="metric-icon">📋</span><small>Total de receitas</small><strong id="totalReceitas">0</strong></article>
+          <article class="card metric-card"><span class="metric-icon">🍽️</span><small>Ativos no cardápio</small><strong id="totalAtivosCardapio">0</strong></article>
+          <article class="card metric-card"><span class="metric-icon">⏱️</span><small>Custo operacional/min</small><strong id="custoFixoUnitario">R$ 0,00</strong></article>
+        </div>
+        <div class="dashboard-grid">
+          <article class="card"><div class="panel-title"><h3>Produtos com maior custo</h3><span>Top 5</span></div><div id="listaMaiorCusto" class="list-area empty-state">Nenhuma receita cadastrada ainda.</div></article>
+          <article class="card"><div class="panel-title"><h3>Preço final escolhido</h3><span>Cardápio</span></div><div id="listaPrecoSugerido" class="list-area empty-state">Cadastre receitas para visualizar os preços.</div></article>
+          <article class="card alert-panel"><div class="panel-title"><h3>Avisos</h3><span>Conferência</span></div><div id="listaAvisosReceitas" class="list-area empty-state">Nenhum aviso no momento.</div></article>
+        </div>
+      </section>
+
+      <section id="ingredientes" class="tab-content">
+        <div class="section-header">
+          <div><p class="eyebrow">Base de compras</p><h2>Ingredientes / Matérias-primas</h2></div>
+          <p>Cadastre ou edite os custos dos produtos comprados.</p>
+        </div>
+        <div class="content-grid">
+          <form id="formIngrediente" class="card form-card">
+            <input type="hidden" id="ingredienteId" />
+            <h3>Novo ingrediente</h3>
+            <label>Código<input type="text" id="ingredienteCodigo" placeholder="Ex: 20" /></label>
+            <label>Nome do ingrediente<input type="text" id="ingredienteNome" placeholder="Ex: Vodka, Limão, Açúcar" required /></label>
+            <label>Unidade de compra<select id="ingredienteUnidadeCompra" required><option value="">Selecione</option><option value="kg">Kg</option><option value="g">Gramas</option><option value="litro">Litro</option><option value="ml">Mililitros</option><option value="unidade">Unidade</option><option value="pacote">Pacote</option><option value="garrafa">Garrafa</option><option value="caixa">Caixa</option><option value="outro">Outro</option></select></label>
+            <label>Quantidade comprada<input type="number" id="ingredienteQuantidade" min="0" step="0.001" placeholder="Ex: 1000" required /></label>
+            <label>Custo total da compra<input type="text" id="ingredienteCustoTotal" placeholder="Ex: 45,00" required /></label>
+            <div class="form-result"><span>Custo calculado</span><strong id="previewCustoIngrediente">R$ 0,0000</strong></div>
+            <div class="form-actions"><button type="submit" class="btn primary">Salvar ingrediente</button><button type="button" id="cancelarEdicaoIngrediente" class="btn ghost hidden">Cancelar</button></div>
+          </form>
+          <article class="card table-card">
+            <div class="table-toolbar"><h3>Ingredientes cadastrados</h3><input type="search" id="buscaIngredientes" placeholder="Buscar ingrediente..." /></div>
+            <div class="table-wrapper"><table><thead><tr><th>Código</th><th>Ingrediente</th><th>Compra</th><th>Custo total</th><th>Custo base</th><th>Ações</th></tr></thead><tbody id="tabelaIngredientes"></tbody></table></div>
+          </article>
+        </div>
+      </section>
+
+      <section id="custos" class="tab-content">
+        <div class="section-header">
+          <div><p class="eyebrow">Operação</p><h2>Custos fixos e capacidade produtiva</h2></div>
+          <p>O custo operacional entra na ficha pelo tempo de preparo de cada item.</p>
+        </div>
+        <div class="content-grid">
+          <form id="formCusto" class="card form-card">
+            <input type="hidden" id="custoId" />
+            <h3>Novo custo fixo</h3>
+            <label>Nome do custo<input type="text" id="custoNome" placeholder="Ex: Aluguel, Energia, Gás" required /></label>
+            <label>Categoria<select id="custoCategoria" required><option value="">Selecione</option><option>Aluguel</option><option>Energia</option><option>Água</option><option>Internet</option><option>Gás</option><option>Salários</option><option>Taxas</option><option>Embalagens</option><option>Perdas</option><option>Outros</option></select></label>
+            <label>Valor mensal<input type="text" id="custoValorMensal" placeholder="Ex: 1200,00" required /></label>
+            <div class="form-actions"><button type="submit" class="btn primary">Salvar custo</button><button type="button" id="cancelarEdicaoCusto" class="btn ghost hidden">Cancelar</button></div>
+          </form>
+          <div class="stack-grid">
+            <article class="card form-card">
+              <h3>Capacidade produtiva</h3>
+              <label>Horas produtivas estimadas no mês<input type="number" id="horasProdutivasMes" min="0" step="0.5" placeholder="Ex: 220" /></label>
+              <div class="recipe-preview-grid compact-preview">
+                <div><span>Total custos fixos</span><strong id="previewTotalCustosFixos">R$ 0,00</strong></div>
+                <div><span>Custo por hora</span><strong id="previewCustoHora">R$ 0,00</strong></div>
+                <div><span>Custo por minuto</span><strong id="previewCustoMinuto">R$ 0,00</strong></div>
+              </div>
+              <button id="salvarConfigCustos" class="btn secondary" type="button">Salvar capacidade</button>
+            </article>
+            <article class="card table-card">
+              <div class="table-toolbar"><h3>Custos cadastrados</h3></div>
+              <div class="table-wrapper"><table><thead><tr><th>Custo</th><th>Categoria</th><th>Valor mensal</th><th>Ações</th></tr></thead><tbody id="tabelaCustos"></tbody></table></div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="receitas" class="tab-content">
+        <div class="section-header">
+          <div><p class="eyebrow">Produção</p><h2>Receitas / Ficha técnica</h2></div>
+          <p>Monte produtos, calcule custo final e publique no cardápio digital.</p>
+        </div>
+        <div class="card import-card">
+          <div><h3>Importar receitas por CSV</h3><p>Modelo simples: <strong>Prato;Código;Ingrediente;Quantidade;Tempo</strong>. O sistema agrupa pelo prato e busca o ingrediente pelo código.</p></div>
+          <div class="form-actions"><input type="file" id="importarReceitasInput" accept=".csv,text/csv" /><button id="importarReceitasCsv" type="button" class="btn secondary">Importar receitas CSV</button></div>
+        </div>
+        <form id="formReceita" class="card form-card full-width">
+          <input type="hidden" id="receitaId" />
+          <input type="hidden" id="receitaFotoProduto" />
+          <div class="form-grid">
+            <label>Nome do produto<input type="text" id="receitaNome" placeholder="Ex: Caipirinha" required /></label>
+            <label>Categoria<select id="receitaCategoria" required><option value="">Selecione</option><option>Drink</option><option>Prato</option><option>Porção</option><option>Sobremesa</option><option>Outro</option></select></label>
+            <label>Setor de preparo<select id="receitaSetorPreparo"><option value="auto">Automático pela categoria</option><option value="bar">Bar</option><option value="cozinha">Cozinha</option><option value="ambos">Ambos</option></select></label>
+            <label>Rendimento<input type="text" id="receitaRendimento" placeholder="Ex: 1 copo, 1 prato" /></label>
+            <label>Tempo de preparo em minutos<input type="number" id="receitaTempoPreparo" min="0" step="0.5" placeholder="Ex: 5" /></label>
+          </div>
+          <div class="ingredients-builder">
+            <div class="builder-header"><h3>Ingredientes da receita</h3><button type="button" id="adicionarIngredienteReceita" class="btn secondary">+ Adicionar ingrediente</button></div>
+            <div id="listaIngredientesReceita" class="recipe-ingredients-list"></div>
+          </div>
+          <div class="form-grid cardapio-fields">
+            <label>Ativo no cardápio<select id="receitaAtivoCardapio"><option value="false">Não</option><option value="true">Sim</option></select></label>
+            <label>Preço final escolhido<input type="text" id="receitaPrecoFinal" placeholder="Ex: 24,90" /></label>
+            <label>Foto do produto<input type="file" id="receitaFotoInput" accept="image/*" /></label>
+            <label>URL da foto, opcional<input type="url" id="receitaFotoUrl" placeholder="https://..." /></label>
+          </div>
+          <div id="fotoPreviewBox" class="foto-preview hidden"><img id="fotoPreview" alt="Prévia da foto do produto" /><button type="button" id="removerFotoProduto" class="btn danger">Remover foto</button></div>
+          <label>Descrição para cardápio<textarea id="receitaDescricaoCardapio" rows="3" placeholder="Descrição bonita para o cliente ver no cardápio digital."></textarea></label>
+          <label>Modo de preparo<textarea id="receitaModoPreparo" rows="5" placeholder="Descreva o passo a passo do preparo interno."></textarea></label>
+          <label>Observações para treinamento<textarea id="receitaObservacoes" rows="4" placeholder="Ex: ponto ideal, cuidados, finalização."></textarea></label>
+          <label>Padrão de apresentação<textarea id="receitaApresentacao" rows="3" placeholder="Ex: copo, louça, decoração e finalização."></textarea></label>
+          <div class="recipe-preview-grid">
+            <div><span>Custo ingredientes</span><strong id="previewCustoIngredientes">R$ 0,00</strong></div>
+            <div><span>Custo por tempo</span><strong id="previewCustoFixoReceita">R$ 0,00</strong></div>
+            <div><span>Custo total</span><strong id="previewCustoTotalReceita">R$ 0,00</strong></div>
+            <div><span>Sugerido bruto</span><strong id="previewPrecoSugerido">R$ 0,00</strong></div>
+            <div><span>Arredondado</span><strong id="previewPrecoArredondado">R$ 0,00</strong></div>
+            <div><span>Final / margem</span><strong id="previewMargem">0%</strong></div>
+          </div>
+          <div class="form-actions"><button type="submit" class="btn primary">Salvar ficha técnica</button><button type="button" id="cancelarEdicaoReceita" class="btn ghost hidden">Cancelar</button></div>
+        </form>
+        <article class="card table-card">
+          <div class="table-toolbar"><h3>Receitas cadastradas</h3><input type="search" id="buscaReceitas" placeholder="Buscar receita..." /></div>
+          <div class="table-wrapper"><table><thead><tr><th>Produto</th><th>Categoria</th><th>Setor</th><th>Custo total</th><th>Sugerido</th><th>Arredondado</th><th>Preço final</th><th>Margem</th><th>Cardápio</th><th>Ações</th></tr></thead><tbody id="tabelaReceitas"></tbody></table></div>
+        </article>
+      </section>
+
+      <section id="simulador" class="tab-content">
+        <div class="section-header"><div><p class="eyebrow">Precificação</p><h2>Simulador</h2></div><p>Confira lucro, margem, markup real e semáforo de margem.</p></div>
+        <article class="card form-card">
+          <label>Produto<select id="simuladorProduto"><option value="">Selecione uma ficha técnica</option></select></label>
+          <div id="simuladorResultado" class="simulator-grid"></div>
+        </article>
+      </section>
+
+      <section id="treinamento" class="tab-content">
+        <div class="section-header"><div><p class="eyebrow">Padrão Capivaras</p><h2>Modo de preparo / Treinamento</h2></div><p>Área limpa e prática para treinar bartender, cozinha e atendimento.</p></div>
+        <div class="training-toolbar"><input type="text" id="buscaTreinamento" placeholder="Buscar receita..." /><select id="filtroCategoriaTreinamento"><option value="">Todas as categorias</option><option>Drink</option><option>Prato</option><option>Porção</option><option>Sobremesa</option><option>Outro</option></select></div>
+        <div id="cardsTreinamento" class="training-grid"></div>
+      </section>
+
+      <section id="qrcode" class="tab-content">
+        <div class="section-header"><div><p class="eyebrow">Cardápio digital</p><h2>QR Code</h2></div><p>Gere o QR Code para imprimir e deixar no balcão ou nas mesas.</p></div>
+        <div class="qr-layout">
+          <article class="card form-card">
+            <label>URL do cardápio<input type="url" id="cardapioUrl" placeholder="https://seuusuario.github.io/seurepo/cardapio.html" /></label>
+            <div class="form-actions"><button id="gerarQrCode" type="button" class="btn primary">Gerar QR Code</button><a id="baixarQrCode" class="btn secondary hidden" href="#" download="qrcode-cardapio-capivaras.png">Baixar QR em PNG</a></div>
+            <div class="print-text"><strong>Escaneie e veja nosso cardápio digital</strong><span>Faça seu pedido diretamente no balcão.</span></div>
+          </article>
+          <article class="card qr-card"><div id="qrPreview" class="qr-preview empty-state">Informe a URL e gere o QR Code.</div></article>
+        </div>
+      </section>
+
+      <section id="pedidos" class="tab-content">
+        <div class="section-header"><div><p class="eyebrow">Atendimento</p><h2>Pedidos por mesa</h2></div><p>Controle pedidos enviados pelo cardápio com visão geral, bar e cozinha.</p></div>
+        <div class="orders-admin-grid">
+          <article class="card form-card">
+            <h3>Modo de atendimento</h3>
+            <label>Modo atual<select id="modoAtendimento"><option value="cardapio">Apenas cardápio</option><option value="pedidos">Cardápio + pedidos</option></select></label>
+            <div class="form-actions"><button id="salvarConfigAtendimento" class="btn primary" type="button">Salvar modo</button></div>
+            <div id="resumoAtendimento" class="print-text"><strong>Apenas cardápio</strong><span>O cliente visualiza o cardápio e pede diretamente no balcão.</span></div>
+          </article>
+          <article class="card form-card">
+            <h3>Filtros</h3>
+            <div class="order-filters">
+              <label>Mesa<select id="filtroPedidoMesa"><option value="">Todas as mesas</option></select></label>
+              <label>Status<select id="filtroPedidoStatus"><option value="">Todos</option><option>Novo</option><option>Em preparo</option><option>Pronto</option><option>Entregue</option><option>Cancelado</option></select></label>
+              <label>Data<input type="date" id="filtroPedidoData" /></label>
+              <label>Cobrança<select id="filtroPedidoCobranca"><option value="">Todas</option><option value="pagar_entrega">Pagar na entrega</option><option value="comanda">Comanda</option></select></label>
+            </div>
+          </article>
+        </div>
+        <div class="orders-summary">
+          <article class="card order-count-card"><small>Novo</small><strong id="pedidosCountNovo">0</strong></article>
+          <article class="card order-count-card"><small>Em preparo</small><strong id="pedidosCountEmPreparo">0</strong></article>
+          <article class="card order-count-card"><small>Pronto</small><strong id="pedidosCountPronto">0</strong></article>
+          <article class="card order-count-card"><small>Entregue</small><strong id="pedidosCountEntregue">0</strong></article>
+          <article class="card order-count-card"><small>Cancelado</small><strong id="pedidosCountCancelado">0</strong></article>
+        </div>
+        <div class="order-view-switch" aria-label="Visão dos pedidos">
+          <button class="menu-filter active" type="button" data-pedido-view="geral">Geral</button>
+          <button class="menu-filter" type="button" data-pedido-view="bar">Bar</button>
+          <button class="menu-filter" type="button" data-pedido-view="cozinha">Cozinha</button>
+        </div>
+        <div id="listaPedidosAdmin" class="orders-board"></div>
+      </section>
+
+      <section id="mesas" class="tab-content">
+        <div class="section-header"><div><p class="eyebrow">Mesas</p><h2>Mesas / QR Codes</h2></div><p>Gere links e QR Codes individuais para cada mesa.</p></div>
+        <div class="qr-layout">
+          <article class="card form-card">
+            <label>URL base do cardápio<input type="url" id="urlBaseMesas" placeholder="https://seuusuario.github.io/seurepo/cardapio.html" /></label>
+            <label>Quantidade de mesas<input type="number" id="quantidadeMesas" min="1" step="1" placeholder="Ex: 12" /></label>
+            <div class="form-actions"><button id="gerarMesas" class="btn primary" type="button">Gerar mesas e QR Codes</button></div>
+            <div id="exemploLinksMesas" class="print-text"><strong>Exemplos</strong><span>Mesa 01 → cardapio.html?mesa=01</span><span>Mesa 02 → cardapio.html?mesa=02</span></div>
+          </article>
+          <article class="card table-card">
+            <div class="table-toolbar"><h3>QR Codes por mesa</h3></div>
+            <div id="listaMesasQr" class="mesa-qr-grid empty-state">Informe a quantidade de mesas para gerar os links.</div>
+          </article>
+        </div>
+      </section>
+
+      <section id="dados" class="tab-content">
+        <div class="section-header"><div><p class="eyebrow">Backup</p><h2>Importação, exportação e dados</h2></div><p>Use JSON para backup completo e CSV para atualizar bases.</p></div>
+        <div class="data-actions-grid">
+          <article class="card data-card"><h3>Importar custos.csv</h3><p>Busca automaticamente o arquivo <strong>custos.csv</strong> no diretório do sistema.</p><button id="importarCsvDiretorio" class="btn secondary">Carregar custos.csv</button></article>
+          <article class="card data-card"><h3>Importar CSV manual</h3><p>Importe uma planilha CSV de ingredientes.</p><input type="file" id="importarCsvInput" accept=".csv,text/csv" /><button id="importarCsvManual" class="btn secondary">Importar CSV</button></article>
+          <article class="card data-card"><h3>Exportar ingredientes CSV</h3><p>Baixe a base atualizada de ingredientes após edições.</p><button id="exportarCsv" class="btn primary">Exportar ingredientes CSV</button></article>
+          <article class="card data-card"><h3>Exportar cardápio JSON</h3><p>Gere um arquivo público para usar em cardapio.html se desejar publicar sem banco de dados.</p><button id="exportarCardapioJson" class="btn primary">Exportar cardápio JSON</button></article>
+          <article class="card data-card install-card"><h3>Instalar aplicativo</h3><p data-install-instructions>Android: abrir no Chrome e tocar em Adicionar à tela inicial. iPhone: abrir no Safari, compartilhar e Adicionar à Tela de Início. Computador: usar o botão de instalar do navegador.</p><button class="btn primary" type="button" data-install-app>Instalar aplicativo</button></article>
+          <article class="card data-card"><h3>Exportar JSON</h3><p>Backup completo com ingredientes, custos, configurações e receitas.</p><button id="exportarJson" class="btn primary">Exportar JSON</button></article>
+          <article class="card data-card"><h3>Importar JSON</h3><p>Restaure um backup completo salvo anteriormente.</p><input type="file" id="importarJsonInput" accept=".json,application/json" /><button id="importarJson" class="btn secondary">Importar JSON</button></article>
+          <article class="card data-card danger-zone"><h3>Limpar dados</h3><p>Remove os dados salvos neste navegador.</p><button id="limparDados" class="btn danger">Limpar tudo</button></article>
+        </div>
+        <article class="card"><h3>Resumo dos dados salvos</h3><pre id="resumoDados" class="data-preview">Nenhum dado salvo ainda.</pre></article>
+      </section>
+    </main>
+  </div>
+
+  <footer class="watermark">powered by GS Hub · desenvolvido por Gibson Caio Ribeiro</footer>
+  <div id="toast" class="toast hidden"></div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="data-service.js"></script>
+  <script src="pedidos.js"></script>
+  <script src="pwa.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

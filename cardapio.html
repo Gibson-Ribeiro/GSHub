@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cardápio Digital | Capivaras Feira & Bar</title>
+  <meta name="description" content="Cardápio digital do Capivaras Feira & Bar." />
+  <meta name="theme-color" content="#1E3A1A" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="cardapio-body">
+  <div class="app-bg-glow app-bg-glow-one"></div>
+  <div class="app-bg-glow app-bg-glow-two"></div>
+
+  <main class="menu-shell">
+    <header class="menu-hero">
+      <div class="menu-brand">
+        <div class="brand-logo"><img src="logo.png" alt="Logo Capivaras Feira & Bar" /></div>
+        <div>
+          <h1>Capivaras</h1>
+          <span>Feira & Bar</span>
+        </div>
+      </div>
+      <div id="menuNotice" class="menu-notice">
+        <strong>Faça seu pedido diretamente no balcão.</strong>
+        <p>Cardápio digital atualizado pelo Capivaras.</p>
+      </div>
+    </header>
+
+    <div id="pedidoModoInfo" class="order-mode-banner hidden"></div>
+
+    <div id="menuOrderLayout" class="menu-order-layout simple">
+      <div>
+        <nav id="menuFiltros" class="menu-filters" aria-label="Filtros do cardápio"></nav>
+        <section id="menuLista" class="menu-grid"></section>
+      </div>
+
+      <aside id="pedidoCarrinho" class="cart-panel hidden">
+        <div class="panel-title"><h2>Pedido da mesa <span id="pedidoMesaLabel">--</span></h2><span id="carrinhoContador">0 itens</span></div>
+        <div id="carrinhoItens" class="cart-items empty-state">Seu carrinho está vazio.</div>
+        <div class="cart-form">
+          <label>Seu nome<input type="text" id="pedidoClienteNome" placeholder="Ex: Ana" /></label>
+          <label>Observação opcional<textarea id="pedidoObservacao" rows="3" placeholder="Ex: sem gelo, ponto da carne, retirar cebola..."></textarea></label>
+          <label>Tipo de cobrança<select id="pedidoTipoCobranca"><option value="pagar_entrega">Pagar na entrega</option><option value="comanda">Comanda</option></select></label>
+        </div>
+        <div class="cart-total"><span>Total</span><strong id="carrinhoTotal">R$ 0,00</strong></div>
+        <button id="enviarPedido" class="btn primary" type="button">Enviar pedido</button>
+        <div id="pedidoConfirmacao" class="order-confirmation hidden"></div>
+      </aside>
+    </div>
+
+    <footer class="menu-footer">
+      <strong>Escaneie e veja nosso cardápio digital</strong><br />
+      Faça seu pedido diretamente no balcão.
+    </footer>
+  </main>
+
+  <footer class="watermark">powered by GS Hub · desenvolvido por Gibson Caio Ribeiro</footer>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="data-service.js"></script>
+  <script src="pedidos.js"></script>
+  <script src="pwa.js"></script>
+  <script src="cardapio.js"></script>
+</body>
+</html>
