@@ -173,6 +173,13 @@
     if(error)throw error;
     return data;
   }
+  async function exchangeCodeForSession(code){
+    const supa=getClient();
+    if(!supa||!code)return null;
+    const {data,error}=await supa.auth.exchangeCodeForSession(code);
+    if(error)throw error;
+    return data;
+  }
   async function getSession(){
     const supa=getClient();
     if(!supa)return null;
@@ -207,6 +214,7 @@
     signOut,
     resetPassword,
     updatePassword,
+    exchangeCodeForSession,
     getSession,
     carregarPerfilUsuario
   };
